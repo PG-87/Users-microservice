@@ -13,8 +13,10 @@ import javax.persistence.Id;
 @Entity
 public class User {
 
-    @Id @GeneratedValue long id;
-    String name;
-    String adress;
+    @Id @GeneratedValue int id;
+    String username;
+    String realName;
     String mail;
+    float income;
+    boolean inRelationship;
 }
