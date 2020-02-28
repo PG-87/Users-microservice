@@ -1,5 +1,6 @@
 package se.iths.patrikgustafsson.myservice;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
@@ -7,40 +8,34 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.client.RestTemplate;
 
 import java.util.Map;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
-
-//här ka nvi lägga en @RequestMapping("/api/users")
 
 @Slf4j
 @RequestMapping("/api/v1/users")
 @RestController
 public class UsersController {
 
+    @Autowired
+    RestTemplate restTemplate;
 
     final UsersRepository repository;
     private final UserDataModelAssembler assembler;
 
-
-    //Vi behöver ha en konstruktor med lite injections. Tex UserRepository och en som fixar länkarna
     public UsersController(UsersRepository storage, UserDataModelAssembler usersModelAssembler) {
         this.repository = storage;
         this.assembler = usersModelAssembler;
     }
 
-
-    //här ska vi ha metoder som get, head, post, put, patch om vi vill.
-    //till exempel:
-    // getAllUsers med GetMapping
     @GetMapping
     public CollectionModel<EntityModel<User>> all() {
         log.info("All persons called");
         return assembler.toCollectionModel(repository.findAll());
     }
 
-    // getUserByID -"- och (value = "/{id}")
     @GetMapping(value = "/{id}")
     public ResponseEntity<EntityModel<User>> one(@PathVariable Long id) {
         log.info("One person called");
@@ -50,12 +45,9 @@ public class UsersController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
-    // createUser med: PostMapping och @RequestBody User user
     @PostMapping
     public ResponseEntity<EntityModel<User>> createUser(@RequestBody User user) {
 
-        //409 if conflict, if resource already exists
         if(repository.findById(user.getId()).isPresent()) {
             return new ResponseEntity<>(HttpStatus.CONFLICT);
         }
@@ -63,14 +55,11 @@ public class UsersController {
         var u = repository.save(user);
         log.info("Saved to repository " + u);
 
-        //länkar med EntityModel
         var entityModel = assembler.toModel(u);
 
         return new ResponseEntity<>(entityModel, HttpStatus.CREATED);
 
     }
-
-    // deleteUser med DeleteMapping(@Pathvariable long id)
 
     @DeleteMapping("/{id}")
     ResponseEntity<?> deletePerson(@PathVariable Long id) {
@@ -81,10 +70,8 @@ public class UsersController {
         } else
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-    // modifyUser med PatchMapping("/{id}")
 
-    // replaceUser med PutMapping("/{id}")
-    @PutMapping("/{id}") // uppdate  replace
+    @PutMapping("/{id}")
     ResponseEntity<EntityModel<User>> replacePerson(@RequestBody User userIn, @PathVariable Long id) {
 
         if(repository.findById(id).isPresent()){
@@ -93,7 +80,7 @@ public class UsersController {
                         existingUser.setUserName(userIn.getUserName());
                         existingUser.setRealName(userIn.getRealName());
                         existingUser.setCity((userIn.getCity()));
-                        existingUser.setIncome(userIn.getIncome());
+//                        existingUser.setIncome(userIn.getIncome());
                         existingUser.setInRelationship(userIn.inRelationship);
                         repository.save(existingUser);
                         return existingUser;})
@@ -119,8 +106,8 @@ public class UsersController {
                         newUser.setRealName(updatedUser.getRealName());
                     if(updatedUser.getCity() != null)
                         newUser.setCity(updatedUser.getCity());
-                    if(updatedUser.getIncome() != newUser.getIncome())
-                        newUser.setIncome(updatedUser.getIncome());
+//                    if(updatedUser.getIncome() != newUser.getIncome())
+//                        newUser.setIncome(updatedUser.getIncome());
                     if(updatedUser.isInRelationship() != newUser.isInRelationship())
                         newUser.setInRelationship(updatedUser.isInRelationship());
                     repository.save(newUser);
@@ -134,20 +121,28 @@ public class UsersController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+// TODO FRÅGA MÅNDAG VAD SKILLNADEN ÄR PÅ DENNA OCH OVAN!
 //    @PatchMapping("/{id}")
-//    ResponseEntity<User> modifyPerson(@RequestBody User newUser, @PathVariable Long id) {
-//
+//    ResponseEntity<User> modifyUser(@RequestBody User updatedUser, @PathVariable Long id){
 //        return repository.findById(id)
-//                .map(person -> {
-//                    if (newUser.getRealName() != null)
-//                        person.setRealName(newUser.getRealName());
-//
-//                    repository.save(person);
-//                    HttpHeaders headers = new HttpHeaders();
-//                    headers.setLocation(linkTo(UsersController.class).slash(person.getId()).toUri());
-//                    return new ResponseEntity<>(person, headers, HttpStatus.OK);
-//                })
-//                .orElseGet(() ->
-//                        new ResponseEntity<>(HttpStatus.NOT_FOUND));
+//                    .map(newUser -> {
+//                        if(updatedUser.getUserName() != null)
+//                            newUser.setUserName(updatedUser.getUserName());
+//                        if(updatedUser.getRealName() != null)
+//                            newUser.setRealName(updatedUser.getRealName());
+//                        if(updatedUser.getCity() != null)
+//                            newUser.setCity(updatedUser.getCity());
+//                        if(updatedUser.getIncome() != newUser.getIncome())
+//                            newUser.setIncome(updatedUser.getIncome());
+//                        if(updatedUser.isInRelationship() != newUser.isInRelationship())
+//                            newUser.setInRelationship(updatedUser.isInRelationship());
+//                        repository.save(newUser);
+//                        HttpHeaders headers = new HttpHeaders();
+//                        headers.setLocation(linkTo(UsersController.class).slash(newUser.getId()).toUri());
+//                        log.info("IDnr: " + newUser.getId() + " modified!");
+//                        return new ResponseEntity<>(newUser, headers, HttpStatus.OK);
+//        })
+//        .orElseGet(() ->
+//            new ResponseEntity<>(HttpStatus.NOT_FOUND));
 //    }
 }
