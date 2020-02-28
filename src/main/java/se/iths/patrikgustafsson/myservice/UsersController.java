@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 //här ka nvi lägga en @RequestMapping("/api/users")
@@ -97,7 +99,7 @@ public class UsersController {
                         return existingUser;})
                     .get();
             var entityModel = assembler.toModel(p);
-            log.info("IDnr: " + userIn.getId() + " Updated!");
+            log.info("IDnr: " + p.getId() + " Updated!");
             return new ResponseEntity<>(entityModel, HttpStatus.OK);
         }
         else{
@@ -105,20 +107,47 @@ public class UsersController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
+
     @PatchMapping("/{id}")
-    ResponseEntity<User> modifyPerson(@RequestBody User newUser, @PathVariable Long id) {
-
-        return repository.findById(id)
-                .map(person -> {
-                    if (newUser.getRealName() != null)
-                        person.setRealName(newUser.getRealName());
-
-                    repository.save(person);
-                    HttpHeaders headers = new HttpHeaders();
-                    headers.setLocation(linkTo(UsersController.class).slash(person.getId()).toUri());
-                    return new ResponseEntity<>(person, headers, HttpStatus.OK);
-                })
-                .orElseGet(() ->
-                        new ResponseEntity<>(HttpStatus.NOT_FOUND));
+    ResponseEntity<EntityModel<User>> modifyUser(@RequestBody User updatedUser, @PathVariable Long id){
+        if(repository.findById(id).isPresent()){
+            var p = repository.findById(id)
+                .map(newUser -> {
+                    if(updatedUser.getUserName() != null)
+                        newUser.setUserName(updatedUser.getUserName());
+                    if(updatedUser.getRealName() != null)
+                        newUser.setRealName(updatedUser.getRealName());
+                    if(updatedUser.getCity() != null)
+                        newUser.setCity(updatedUser.getCity());
+                    if(updatedUser.getIncome() != newUser.getIncome())
+                        newUser.setIncome(updatedUser.getIncome());
+                    if(updatedUser.isInRelationship() != newUser.isInRelationship())
+                        newUser.setInRelationship(updatedUser.isInRelationship());
+                    repository.save(newUser);
+                    return newUser;}).get();
+            var entityModel = assembler.toModel(p);
+            log.info("IDnr: " + p.getId() + " modified!");
+            return new ResponseEntity<>(entityModel, HttpStatus.OK);
+        }
+        else {
+            log.info("Wrong ID");
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
+//    @PatchMapping("/{id}")
+//    ResponseEntity<User> modifyPerson(@RequestBody User newUser, @PathVariable Long id) {
+//
+//        return repository.findById(id)
+//                .map(person -> {
+//                    if (newUser.getRealName() != null)
+//                        person.setRealName(newUser.getRealName());
+//
+//                    repository.save(person);
+//                    HttpHeaders headers = new HttpHeaders();
+//                    headers.setLocation(linkTo(UsersController.class).slash(person.getId()).toUri());
+//                    return new ResponseEntity<>(person, headers, HttpStatus.OK);
+//                })
+//                .orElseGet(() ->
+//                        new ResponseEntity<>(HttpStatus.NOT_FOUND));
+//    }
 }
