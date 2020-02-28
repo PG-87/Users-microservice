@@ -5,6 +5,9 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.server.RepresentationModelAssembler;
 import org.springframework.stereotype.Component;
 
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Component
@@ -18,7 +21,11 @@ public class UserDataModelAssembler implements RepresentationModelAssembler<User
     }
 
     @Override
-    public CollectionModel<EntityModel<User>> toCollectionModel(Iterable<? extends User> entities){
-        return null;
+    public CollectionModel<EntityModel<User>> toCollectionModel(Iterable<? extends User> entities) {
+        var collection = StreamSupport.stream(entities.spliterator(), false)
+                .map(this::toModel)
+                .collect(Collectors.toList());
+        return new CollectionModel<>(collection,
+                linkTo(methodOn(UsersController.class).all()).withSelfRel());
     }
 }
