@@ -20,6 +20,13 @@ public class UserDataModelAssembler implements RepresentationModelAssembler<User
                 linkTo(methodOn(UsersController.class).all()).withRel("users"));
     }
 
+
+    public EntityModel<User> toModelName(User user){
+        return new EntityModel<>(user,
+                linkTo(methodOn(UsersController.class).getByUsername(user.getUserName())).withSelfRel(),
+                linkTo(methodOn(UsersController.class).all()).withRel("users"));
+    }
+
     @Override
     public CollectionModel<EntityModel<User>> toCollectionModel(Iterable<? extends User> entities) {
         var collection = StreamSupport.stream(entities.spliterator(), false)

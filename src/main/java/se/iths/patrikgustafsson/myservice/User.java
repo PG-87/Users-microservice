@@ -16,10 +16,10 @@ public class User {
     String userName;
     String realName;
     String city;
-    float income;
+    Integer income;
     boolean inRelationship;
 
-    public User(Long id, String userName, String realName, String city, float income, boolean inRelationship) {
+    public User(Long id, String userName, String realName, String city, Integer income, boolean inRelationship) {
         this.id = id;
         this.userName = userName;
         this.realName = realName;

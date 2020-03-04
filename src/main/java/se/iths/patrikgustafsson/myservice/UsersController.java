@@ -36,11 +36,20 @@ public class UsersController {
         return assembler.toCollectionModel(repository.findAll());
     }
 
-    @GetMapping(value = "/{id}")
+    @GetMapping(value = "/{id:[0-9]+}")
     public ResponseEntity<EntityModel<User>> one(@PathVariable Long id) {
         log.info("One person called");
         return repository.findById(id)
                 .map(assembler::toModel)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping(value = "/{userName:[A-Z, a-z]+}")
+    public ResponseEntity<EntityModel<User>> getByUsername(@PathVariable String userName) {
+        log.info("User with username: " + userName);
+        return repository.findByUserName(userName)
+                .map(assembler::toModelName)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -80,7 +89,7 @@ public class UsersController {
                         existingUser.setUserName(userIn.getUserName());
                         existingUser.setRealName(userIn.getRealName());
                         existingUser.setCity((userIn.getCity()));
-//                        existingUser.setIncome(userIn.getIncome());
+                        existingUser.setIncome(userIn.getIncome());
                         existingUser.setInRelationship(userIn.inRelationship);
                         repository.save(existingUser);
                         return existingUser;})
@@ -106,8 +115,8 @@ public class UsersController {
                         newUser.setRealName(updatedUser.getRealName());
                     if(updatedUser.getCity() != null)
                         newUser.setCity(updatedUser.getCity());
-//                    if(updatedUser.getIncome() != newUser.getIncome())
-//                        newUser.setIncome(updatedUser.getIncome());
+                    if(updatedUser.getIncome() != null)
+                        newUser.setIncome(updatedUser.getIncome());
                     if(updatedUser.isInRelationship() != newUser.isInRelationship())
                         newUser.setInRelationship(updatedUser.isInRelationship());
                     repository.save(newUser);
@@ -121,28 +130,4 @@ public class UsersController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
-// TODO FRÅGA MÅNDAG VAD SKILLNADEN ÄR PÅ DENNA OCH OVAN!
-//    @PatchMapping("/{id}")
-//    ResponseEntity<User> modifyUser(@RequestBody User updatedUser, @PathVariable Long id){
-//        return repository.findById(id)
-//                    .map(newUser -> {
-//                        if(updatedUser.getUserName() != null)
-//                            newUser.setUserName(updatedUser.getUserName());
-//                        if(updatedUser.getRealName() != null)
-//                            newUser.setRealName(updatedUser.getRealName());
-//                        if(updatedUser.getCity() != null)
-//                            newUser.setCity(updatedUser.getCity());
-//                        if(updatedUser.getIncome() != newUser.getIncome())
-//                            newUser.setIncome(updatedUser.getIncome());
-//                        if(updatedUser.isInRelationship() != newUser.isInRelationship())
-//                            newUser.setInRelationship(updatedUser.isInRelationship());
-//                        repository.save(newUser);
-//                        HttpHeaders headers = new HttpHeaders();
-//                        headers.setLocation(linkTo(UsersController.class).slash(newUser.getId()).toUri());
-//                        log.info("IDnr: " + newUser.getId() + " modified!");
-//                        return new ResponseEntity<>(newUser, headers, HttpStatus.OK);
-//        })
-//        .orElseGet(() ->
-//            new ResponseEntity<>(HttpStatus.NOT_FOUND));
-//    }
 }
