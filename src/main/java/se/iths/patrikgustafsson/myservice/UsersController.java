@@ -45,7 +45,7 @@ public class UsersController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping(value = "/{userName:[A-Z, a-z]+}")
+    @GetMapping(value = "/{userName:[0-9]*[A-Za-z]+[0-9]*}")
     public ResponseEntity<EntityModel<User>> getByUsername(@PathVariable String userName) {
         log.info("User with username: " + userName);
         return repository.findByUserName(userName)
