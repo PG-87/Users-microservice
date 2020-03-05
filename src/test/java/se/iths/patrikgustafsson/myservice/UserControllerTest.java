@@ -1,6 +1,5 @@
 package se.iths.patrikgustafsson.myservice;
 
-
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -83,7 +82,7 @@ public class UserControllerTest {
     }
 
     @Test
-    @DisplayName("Post a new user wiht json body")
+    @DisplayName("Post a new user with json body")
     void postNewUserInBodyWithJson() throws Exception {
         mockMvc.perform(post("/api/v1/users")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -150,6 +149,4 @@ public class UserControllerTest {
                 .andExpect(jsonPath("userName", is("Nisse33")))
                 .andExpect(jsonPath("realName", is("Patrik")));
     }
-
-
 }

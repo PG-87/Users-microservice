@@ -65,7 +65,6 @@ public class UsersController {
         log.info("Saved to repository " + u);
 
         var entityModel = assembler.toModel(u);
-
         return new ResponseEntity<>(entityModel, HttpStatus.CREATED);
 
     }
